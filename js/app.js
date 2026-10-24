@@ -20,6 +20,7 @@
     layout={w:innerWidth,h:innerHeight,dpr:Math.min(devicePixelRatio||1,2),
       originX:origin.left,originY:origin.top+scrollY,originW:origin.width,
       copyBottom:heroCopy.getBoundingClientRect().bottom+scrollY,
+      captionHeight:document.querySelector('.marquee-text').offsetHeight,
       start:hero.offsetHeight,range:container.offsetHeight-innerHeight,
       footerTop:footer.offsetTop,footerHeight:footer.offsetHeight,
       total:document.documentElement.scrollHeight-innerHeight,
@@ -166,7 +167,8 @@
       if(footerFade===0)s.style.visibility='hidden';
     });
     const marquee=document.querySelector('.marquee-wrap');
-    marquee.style.top=`${layout.barFloor+16}px`;
+    const captionTop=mobile()&&productBox?Math.max(layout.barFloor+16,productBox.y-layout.captionHeight-24):layout.barFloor+16;
+    marquee.style.top=`${captionTop}px`;
     marquee.style.opacity=clamp((progress-.685)/.025)*clamp((.90-progress)/.025);
     document.querySelector('.marquee-text').style.transform=reduced?'none':`translateY(${18*(1-smooth((progress-.685)/.025))}px)`;
     document.querySelector('.experience-progress div').style.transform=`scaleX(${clamp(scrollY/layout.total)})`;
