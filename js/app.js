@@ -9,6 +9,7 @@
   const footer = document.querySelector('.site-footer');
   const heroHints = document.querySelectorAll('.scroll-cue, .hero-footnote');
   const heroCopy = document.querySelector('.hero-copy');
+  const productBar=document.querySelector('.product-bar');
   let layout, pendingUpdate=false, lastDraw='', productBox;
   let frame = 0, progress = 0, loaded = 0, lenis;
   const clamp = n => Math.max(0, Math.min(1, n));
@@ -95,6 +96,9 @@
     const {start,range}=layout;
     progress=clamp((scrollY-start)/range);
     const transition=clamp(scrollY/(innerHeight*.7));
+    const showBar=scrollY>innerHeight*.55;
+    productBar.classList.toggle('is-visible',showBar);
+    productBar.inert=!showBar;
     document.querySelector('.hero-copy').style.opacity=1-transition;
     const hintOpacity=1-clamp(scrollY/(innerHeight*.22));
     heroHints.forEach(el=>{
@@ -128,10 +132,9 @@
       await Promise.all(Array.from({length:10},(_,i)=>load(i)));
       // Small batches limit decode pressure on mobile.
       for(let i=10;i<count;i+=8)await Promise.all(Array.from({length:Math.min(8,count-i)},(_,j)=>load(i+j)));
-      if(window.gsap&&window.ScrollTrigger&&window.Lenis&&!reduced){
-        gsap.registerPlugin(ScrollTrigger);
+      if(window.gsap&&window.Lenis&&!reduced){
         lenis=new Lenis({duration:1.1,smoothWheel:true,syncTouch:false});
-        lenis.on('scroll',()=>{ScrollTrigger.update();requestUpdate();});
+        lenis.on('scroll',requestUpdate);
         gsap.ticker.add(time=>lenis.raf(time*1000));gsap.ticker.lagSmoothing(0);
       }
       // The local review page uses the same scrolling path as navigation.
@@ -139,17 +142,56 @@
       measure();
       document.body.classList.add('canvas-ready');
       document.querySelector('#loader').remove();draw();update();
-      document.querySelectorAll('a[href^="#"]').forEach(a=>a.addEventListener('click',e=>{
-        const target=document.querySelector(a.getAttribute('href'));if(!target)return;e.preventDefault();
-        const to=target.id==='explore'?hero.offsetHeight+(container.offsetHeight-innerHeight)*.09:0;
-        if(lenis)lenis.scrollTo(to,{duration:reduced?0:1.6});else scrollTo({top:to,behavior:reduced?'instant':'smooth'});
-      }));
+      setupStore();
     }catch(error){document.querySelector('#loader-percent').textContent='Could not load the experience. Please refresh to retry.';console.error(error);}
+  }
+  function setupStore(){
+    const dialogs=[...document.querySelectorAll('dialog')];
+    let inBag=false;
+    function closePanels(){dialogs.forEach(d=>{if(d.open)d.close();});}
+    function openPanel(id){
+      closePanels();const panel=document.getElementById(id);
+      if(id==='bag-panel')renderBag();
+      panel.showModal();document.documentElement.classList.add('panel-open');lenis?.stop();
+      if(id==='search-panel')document.querySelector('#site-search').focus();
+    }
+    dialogs.forEach(d=>{
+      d.addEventListener('close',()=>{if(!dialogs.some(p=>p.open)){document.documentElement.classList.remove('panel-open');lenis?.start();}});
+      d.addEventListener('click',e=>{const r=d.getBoundingClientRect();if(e.target===d&&(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom))d.close();});
+    });
+    document.addEventListener('click',e=>{
+      const opener=e.target.closest('[data-open]');if(opener){openPanel(opener.dataset.open);return;}
+      if(e.target.closest('[data-close]')){closePanels();return;}
+      const a=e.target.closest('a[href^="#"]');if(!a)return;
+      const target=document.querySelector(a.getAttribute('href'));if(!target)return;
+      e.preventDefault();closePanels();
+      const chapter=target.classList.contains('scroll-section');
+      const p=chapter?(+target.dataset.enter+(+target.dataset.leave-+target.dataset.enter)*.5)/100:0;
+      const to=chapter?layout.start+layout.range*p:0;
+      if(lenis){lenis.start();lenis.scrollTo(to,{duration:reduced?0:1.3});}else scrollTo({top:to,behavior:reduced?'instant':'smooth'});
+    });
+    function renderBag(){
+      document.querySelector('#bag-content').innerHTML=inBag?
+        '<div class="bag-item"><img src="frames/mobile/frame_0001.webp" alt="iPhone Duo concept"><div><h3>iPhone Duo</h3><p>Concept item · Not for sale</p><button class="text-button" id="remove-from-bag">Remove from bag</button></div></div>':
+        '<p>Your bag is empty. Add the concept from the Buy panel to try the demo.</p>';
+      document.querySelectorAll('.bag-dot').forEach(el=>el.hidden=!inBag);
+      document.querySelector('.bag-button').setAttribute('aria-label',inBag?'Open demo shopping bag, 1 concept item':'Open demo shopping bag, empty');
+      document.querySelector('#remove-from-bag')?.addEventListener('click',()=>{inBag=false;renderBag();document.querySelector('#bag-panel [data-close]').focus();});
+    }
+    document.querySelector('#add-to-bag').addEventListener('click',()=>{inBag=true;openPanel('bag-panel');});
+    const entries=[
+      {title:'Overview',description:'Meet the iPhone Duo concept',href:'#home',keywords:'home introduction'},
+      {title:'Room for another side',description:'The display and folding form',href:'#explore',keywords:'design screen display'},
+      {title:'At the heart, a hinge',description:'The connection between the folding halves',href:'#hinge',keywords:'hinge connection'},
+      {title:'Inside Duo',description:'Glass, frame, and internal components',href:'#inside',keywords:'architecture interior components'},
+      {title:'Designed around the fold',description:'Battery blocks and a flexible connection',href:'#split-layout',keywords:'battery split layout power'},
+      {title:'About this concept',description:'An independent, unofficial design exploration',href:'#about',keywords:'apple demo information'}
+    ];
+    const search=document.querySelector('#site-search');
+    function renderSearch(){const q=search.value.trim().toLowerCase();const found=entries.filter(e=>(e.title+' '+e.description+' '+e.keywords).toLowerCase().includes(q));document.querySelector('#search-results').innerHTML=found.length?found.map(e=>`<a class="search-result" href="${e.href}">${e.title}<span>${e.description}</span></a>`).join(''):'<p>No matching sections. Try display, hinge, or battery.</p>';}
+    search.addEventListener('input',renderSearch);renderSearch();renderBag();
   }
   addEventListener('scroll',requestUpdate,{passive:true});
   addEventListener('resize',()=>{measure();requestUpdate();});
   init();
 })();
-
-
-
