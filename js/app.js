@@ -123,6 +123,16 @@
     const playback=clamp((progress-.14)/.38);
     const next = reduced ? (progress>.28?72:0) : Math.floor(playback*(count-1));
     draw(next);
+    // Keep desktop copy beside the product instead of at the viewport edges.
+    if(layout.w>=1200&&productBox){
+      const copyWidth=Math.min(360,Math.max(280,layout.w*.22));
+      sections.forEach(s=>{
+        const desired=s.classList.contains('align-right')?
+          productBox.x+productBox.width+40:productBox.x-copyWidth-40;
+        const x=Math.max(layout.w*.05,Math.min(desired,layout.w*.95-copyWidth));
+        s.style.setProperty('--copy-x',`${x}px`);
+      });
+    }
     sections.forEach(s=>showSection(s,progress));
     // Let the fixed experience leave naturally as the real footer enters.
     const footerOverlap=Math.max(0,scrollY+innerHeight-layout.footerTop);
