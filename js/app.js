@@ -45,7 +45,7 @@
       if(clearance>0)productTop=productTop+(layout.bottoms[i]+16-productTop)*clearance;
     });
     const productBottom=h-24;
-    const statementPresence=smooth((progress-.695)/.025)*(1-smooth((progress-.86)/.03));
+    const statementPresence=smooth((progress-.66)/.025)*(1-smooth((progress-.90)/.02));
     const statementFloor=layout.barFloor+32+Math.min(w*.08,h*.06,96)*1.15;
     const zoneH = mobile() ? Math.max(100,productBottom-productTop) : Math.min(h*.80,h-layout.barFloor-24);
     const captionZoneH=!mobile()&&h<500?zoneH+(Math.min(zoneH,h-statementFloor-24)-zoneH)*statementPresence:zoneH;
@@ -116,7 +116,7 @@
         case 'slide-left':transform=`translateX(${-slide*n}px)`;break;
         case 'slide-right':transform=`translateX(${slide*n}px)`;break;
         case 'scale-up':transform=`scale(${1-.12*n})`;break;
-        case 'clip-reveal':el.style.clipPath=`inset(${100*n}% 0 0 0)`;break;
+        case 'clip-reveal':el.style.clipPath=t>=1?'none':`inset(${100*n}% -.12em -.25em -.12em)`;break;
         default:transform=`translateY(${28*n}px)`;
       }} el.style.transform=transform;
     });
@@ -166,8 +166,8 @@
     });
     const marquee=document.querySelector('.marquee-wrap');
     marquee.style.top=`${layout.barFloor+16}px`;
-    marquee.style.opacity=clamp((progress-.72)/.025)*clamp((.86-progress)/.025)*.75;
-    document.querySelector('.marquee-text').style.transform=`translateY(${18*(1-smooth((progress-.72)/.025))}px)`;
+    marquee.style.opacity=clamp((progress-.685)/.025)*clamp((.90-progress)/.025);
+    document.querySelector('.marquee-text').style.transform=reduced?'none':`translateY(${18*(1-smooth((progress-.685)/.025))}px)`;
     document.querySelector('.experience-progress div').style.transform=`scaleX(${clamp(scrollY/layout.total)})`;
     window.duoState={frame,progress,loaded,total:count,productBox,heroBlend,arrival};
   }

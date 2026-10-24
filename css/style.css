@@ -6,7 +6,7 @@
 .hero-standalone{overflow:clip}
 @media(max-width:767px){.hero-product{left:-1vw}}
 @media(max-width:767px){.final-section{background:rgba(255,255,255,.94)}}
-@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important}.marquee-wrap{display:none}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important}}
 
 /* Give the product the larger visual share; keep copy in a quiet side column. */
 @media(min-width:768px){.hero-heading{font-size:clamp(110px,13vw,210px)}.hero-product{width:61vw;left:38vw;top:24svh}.align-left{padding-left:5vw;padding-right:69vw}.align-right{padding-left:69vw;padding-right:5vw}.scroll-section h2{font-size:clamp(42px,4.1vw,68px)}}
@@ -39,7 +39,7 @@
  .final-section .disclaimer{display:none}
  .cta-button,.footer-back{min-height:44px}
  .site-footer{padding-bottom:calc(28px + env(safe-area-inset-bottom))}
- .marquee-wrap{display:none}
+
 }
 @media(max-width:767px) and (orientation:landscape){
  .hero-copy{left:5vw;top:75px}.hero-heading{font-size:64px;margin-bottom:12px}
@@ -116,4 +116,6 @@ button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus
 /* A complete, readable statement above the product on every screen. */
 .marquee-wrap{display:block;bottom:auto}
 .marquee-text{font-size:min(8vw,6svh,96px);color:var(--silver);width:max-content;max-width:90vw;margin:0 auto;text-align:center;line-height:1.15}
-@media(prefers-reduced-motion:reduce){.marquee-wrap{display:none}}
+
+
+#hinge h2{padding-bottom:.12em}
