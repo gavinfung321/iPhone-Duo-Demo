@@ -162,8 +162,8 @@
       if(footerFade===0)s.style.visibility='hidden';
     });
     const marquee=document.querySelector('.marquee-wrap');
-    marquee.style.opacity=clamp((progress-.72)/.025)*clamp((.86-progress)/.025)*.5;
-    document.querySelector('.marquee-text').style.transform=`translateX(${(progress-.72)*-100}%)`;
+    marquee.style.opacity=clamp((progress-.72)/.025)*clamp((.86-progress)/.025)*.75;
+    document.querySelector('.marquee-text').style.transform=`translateY(${18*(1-smooth((progress-.72)/.025))}px)`;
     document.querySelector('.experience-progress div').style.transform=`scaleX(${clamp(scrollY/layout.total)})`;
     window.duoState={frame,progress,loaded,total:count,productBox,heroBlend,arrival};
   }

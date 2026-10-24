@@ -112,3 +112,6 @@ button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus
 }
 
 .cta-button .replay-arrow{display:block;flex-shrink:0}
+
+/* Keep the complete closing statement readable inside the viewport. */
+@media(min-width:768px){.marquee-wrap{bottom:1.5svh}.marquee-text{font-size:min(8vw,6svh,96px);color:var(--silver);width:max-content;max-width:90vw;margin:0 auto;text-align:center;line-height:1.15}}
