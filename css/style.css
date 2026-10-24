@@ -11,3 +11,8 @@
 /* Give the product the larger visual share; keep copy in a quiet side column. */
 @media(min-width:768px){.hero-heading{font-size:clamp(110px,13vw,210px)}.hero-product{width:61vw;left:38vw;top:24svh}.align-left{padding-left:5vw;padding-right:69vw}.align-right{padding-left:69vw;padding-right:5vw}.scroll-section h2{font-size:clamp(42px,4.1vw,68px)}}
 @media(max-width:767px){.hero-product{width:98vw;left:1vw;top:50svh}.hero-copy{top:15svh}.hero-heading{font-size:clamp(96px,23vw,170px)}}
+/* Keep one continuous product visible while the opening copy scrolls away. */
+.hero-standalone{height:100svh}
+.canvas-wrap{clip-path:none;opacity:1}
+.canvas-ready .hero-product{visibility:hidden}
+@media(max-width:767px){.hero-standalone{height:95svh}}

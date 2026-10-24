@@ -4,6 +4,7 @@
   const mobile = () => innerWidth < 768;
   const hero = document.querySelector('.hero-standalone'), wrap = document.querySelector('.canvas-wrap'), container = document.querySelector('#scroll-container');
   const sections = [...document.querySelectorAll('.scroll-section')];
+  const heroProduct = document.querySelector('.hero-product');
   let frame = 0, progress = 0, loaded = 0, lenis;
   const clamp = n => Math.max(0, Math.min(1, n));
   function draw(index = frame) {
@@ -19,13 +20,24 @@
     const zoneH = mobile() ? h * .56 : h * .80;
     const scale = Math.min(zoneW / img.naturalWidth, zoneH / img.naturalHeight);
     const dw = img.naturalWidth*scale, dh=img.naturalHeight*scale;
-    const centerY = mobile() ? h*.70 : h*.54;
+    const settle = clamp(progress / .22);
+    const centerY = mobile() ? h*.72 : h*(.62-.06*settle);
     let centerX=.65;
     if(progress>.18)centerX=.65-.30*clamp((progress-.18)/.03);
     if(progress>.34)centerX=.35+.30*clamp((progress-.34)/.03);
     if(progress>.51)centerX=.65-.15*clamp((progress-.51)/.04);
     if(progress>.76)centerX=.5-.15*clamp((progress-.76)/.04);
-    ctx.drawImage(img,w*(mobile()?.5:centerX)-dw/2,centerY-dh/2,dw,dh);
+    // One canvas owns the phone from the opening through the final frame.
+    // Match the original hero image exactly, then carry it into its sticky pose.
+    const origin = heroProduct.getBoundingClientRect();
+    const originH = origin.width * frames[0].naturalHeight / frames[0].naturalWidth;
+    const travel = reduced ? 1 : clamp(scrollY / (hero.offsetHeight * .9));
+    const eased = travel * travel * (3 - 2 * travel);
+    const mix = (a,b) => a+(b-a)*eased;
+    ctx.drawImage(img,
+      mix(origin.left,w*(mobile()?.5:centerX)-dw/2),
+      mix(origin.top+scrollY,centerY-dh/2),
+      mix(origin.width,dw),mix(originH,dh));
     // Original white studio frames preserve natural edges and ground lighting.
   }
   function showSection(section,p) {
@@ -51,12 +63,13 @@
   function update(){
     const start=hero.offsetHeight, range=container.offsetHeight-innerHeight;
     progress=clamp((scrollY-start)/range);
-    const transition=clamp((scrollY-innerHeight*.35)/(start-innerHeight*.35));
+    const transition=clamp(scrollY/(innerHeight*.7));
     document.querySelector('.hero-copy').style.opacity=1-transition;
-    document.querySelector('.hero-product').style.opacity=1-transition;
-    wrap.style.clipPath=reduced?'none':`circle(${transition*100}% at 60% 50%)`;
-    wrap.style.opacity=transition;
-    const next = reduced ? (progress>.28?72:0) : Math.min(count-1,Math.floor(progress*2*(count-1)));
+    wrap.style.clipPath='none';
+    wrap.style.opacity=1;
+    // Let the first feature arrive around the assembled phone before opening it.
+    const playback=clamp((progress-.14)/.38);
+    const next = reduced ? (progress>.28?72:0) : Math.floor(playback*(count-1));
     draw(next);
     sections.forEach(s=>showSection(s,progress));
     const overlay=clamp((progress-.53)/.04)*clamp((.77-progress)/.04)*.9;
@@ -80,7 +93,8 @@
         gsap.ticker.add(time=>lenis.raf(time*1000));gsap.ticker.lagSmoothing(0);
       }
       // The local review page uses the same scrolling path as navigation.
-      window.duoPreviewSeek = p => {const to=p<0?0:hero.offsetHeight+(container.offsetHeight-innerHeight)*p;if(lenis)lenis.scrollTo(to,{immediate:true});else scrollTo(0,to);update();};
+      window.duoPreviewSeek = p => {const to=p<0?hero.offsetHeight*(p+1):hero.offsetHeight+(container.offsetHeight-innerHeight)*p;if(lenis)lenis.scrollTo(to,{immediate:true});else scrollTo(0,to);update();};
+      document.body.classList.add('canvas-ready');
       document.querySelector('#loader').remove();draw();update();
       document.querySelectorAll('a[href^="#"]').forEach(a=>a.addEventListener('click',e=>{
         const target=document.querySelector(a.getAttribute('href'));if(!target)return;e.preventDefault();
@@ -91,5 +105,6 @@
   }
   addEventListener('scroll',update,{passive:true});addEventListener('resize',()=>{draw();update();});init();
 })();
+
 
 
