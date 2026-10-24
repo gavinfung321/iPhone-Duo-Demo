@@ -16,3 +16,10 @@
 .canvas-wrap{clip-path:none;opacity:1}
 .canvas-ready .hero-product{visibility:hidden}
 @media(max-width:767px){.hero-standalone{height:95svh}}
+.site-footer{position:relative;z-index:20;background:#fff;padding:44px 5vw 32px;border-top:1px solid var(--line)}
+.footer-top{display:flex;align-items:center;justify-content:space-between;gap:30px;padding-bottom:38px}
+.footer-top>p{font-size:17px;line-height:1.5;color:var(--silver);margin:0}
+.footer-back{font-size:14px;white-space:nowrap}.footer-back span{margin-left:14px}
+.footer-bottom{border-top:1px solid var(--line);padding-top:24px;display:flex;justify-content:space-between;align-items:flex-end;gap:40px;font-size:12px;line-height:1.7;color:var(--muted)}
+.footer-bottom p{max-width:78ch;margin:0}.footer-bottom a{white-space:nowrap;text-decoration:underline;text-underline-offset:4px}
+@media(max-width:767px){.site-footer{padding:34px 8vw 28px}.footer-top{align-items:flex-start;flex-wrap:wrap;gap:20px;padding-bottom:28px}.footer-top>p{flex-basis:100%;order:3;font-size:16px;max-width:28ch}.footer-bottom{flex-direction:column;align-items:flex-start;gap:18px}}

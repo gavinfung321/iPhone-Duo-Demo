@@ -5,8 +5,11 @@
   const hero = document.querySelector('.hero-standalone'), wrap = document.querySelector('.canvas-wrap'), container = document.querySelector('#scroll-container');
   const sections = [...document.querySelectorAll('.scroll-section')];
   const heroProduct = document.querySelector('.hero-product');
+  const footer = document.querySelector('.site-footer');
+  const heroHints = document.querySelectorAll('.scroll-cue, .hero-footnote');
   let frame = 0, progress = 0, loaded = 0, lenis;
   const clamp = n => Math.max(0, Math.min(1, n));
+  const smooth = n => {const t=clamp(n);return t*t*(3-2*t);};
   function draw(index = frame) {
     frame = index;
     const img = frames[index]; if (!img) return;
@@ -20,13 +23,12 @@
     const zoneH = mobile() ? h * .56 : h * .80;
     const scale = Math.min(zoneW / img.naturalWidth, zoneH / img.naturalHeight);
     const dw = img.naturalWidth*scale, dh=img.naturalHeight*scale;
-    const settle = clamp(progress / .22);
-    const centerY = mobile() ? h*.72 : h*(.62-.06*settle);
+    const centerY = mobile() ? h*.70 : h*.55;
     let centerX=.65;
-    if(progress>.18)centerX=.65-.30*clamp((progress-.18)/.03);
-    if(progress>.34)centerX=.35+.30*clamp((progress-.34)/.03);
-    if(progress>.51)centerX=.65-.15*clamp((progress-.51)/.04);
-    if(progress>.76)centerX=.5-.15*clamp((progress-.76)/.04);
+    if(progress>.18)centerX=.65-.30*smooth((progress-.18)/.03);
+    if(progress>.34)centerX=.35+.30*smooth((progress-.34)/.03);
+    if(progress>.51)centerX=.65-.15*smooth((progress-.51)/.04);
+    if(progress>.76)centerX=.5-.15*smooth((progress-.76)/.04);
     // One canvas owns the phone from the opening through the final frame.
     // Match the original hero image exactly, then carry it into its sticky pose.
     const origin = heroProduct.getBoundingClientRect();
@@ -65,6 +67,11 @@
     progress=clamp((scrollY-start)/range);
     const transition=clamp(scrollY/(innerHeight*.7));
     document.querySelector('.hero-copy').style.opacity=1-transition;
+    const hintOpacity=1-clamp(scrollY/(innerHeight*.22));
+    heroHints.forEach(el=>{
+      el.style.opacity=hintOpacity;
+      el.style.visibility=hintOpacity>0?'visible':'hidden';
+    });
     wrap.style.clipPath='none';
     wrap.style.opacity=1;
     // Let the first feature arrive around the assembled phone before opening it.
@@ -72,6 +79,14 @@
     const next = reduced ? (progress>.28?72:0) : Math.floor(playback*(count-1));
     draw(next);
     sections.forEach(s=>showSection(s,progress));
+    // Let the fixed experience leave naturally as the real footer enters.
+    const footerOverlap=Math.max(0,scrollY+innerHeight-footer.offsetTop);
+    wrap.style.transform=`translateY(${-footerOverlap*.8}px)`;
+    const footerFade=1-clamp(footerOverlap/(footer.offsetHeight*.65));
+    sections.forEach(s=>{
+      s.style.opacity=Number(s.style.opacity)*footerFade;
+      if(footerFade===0)s.style.visibility='hidden';
+    });
     const overlay=clamp((progress-.53)/.04)*clamp((.77-progress)/.04)*.9;
     document.querySelector('#dark-overlay').style.opacity=overlay;
     const marquee=document.querySelector('.marquee-wrap');
