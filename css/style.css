@@ -110,3 +110,5 @@ button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus
  .scroll-section .section-inner{width:clamp(280px,22vw,360px);margin-left:var(--copy-x,5vw);flex-shrink:0}
  .scroll-section p:not(.section-label){max-width:none}
 }
+
+.cta-button .replay-arrow{display:block;flex-shrink:0}
