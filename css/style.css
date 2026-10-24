@@ -23,3 +23,41 @@
 .footer-bottom{border-top:1px solid var(--line);padding-top:24px;display:flex;justify-content:space-between;align-items:flex-end;gap:40px;font-size:12px;line-height:1.7;color:var(--muted)}
 .footer-bottom p{max-width:78ch;margin:0}.footer-bottom a{white-space:nowrap;text-decoration:underline;text-underline-offset:4px}
 @media(max-width:767px){.site-footer{padding:34px 8vw 28px}.footer-top{align-items:flex-start;flex-wrap:wrap;gap:20px;padding-bottom:28px}.footer-top>p{flex-basis:100%;order:3;font-size:16px;max-width:28ch}.footer-bottom{flex-direction:column;align-items:flex-start;gap:18px}}
+/* Compact copy leaves a dedicated, generous product area on small screens. */
+@media(max-width:767px){
+ .site-header{height:calc(68px + env(safe-area-inset-top));padding-top:env(safe-area-inset-top)}
+ .hero-copy{top:max(90px,12svh)}
+ .hero-copy .section-label{margin-bottom:18px}
+ .hero-heading{font-size:clamp(76px,22vw,112px);margin-bottom:18px}
+ .hero-tagline{font-size:21px;line-height:1.2}
+ .hero-product{top:45svh}
+ .scroll-section,.align-left,.align-right{padding:calc(84px + env(safe-area-inset-top)) 7vw 24px}
+ .scroll-section h2{font-size:clamp(32px,9.6vw,46px);margin-bottom:14px;line-height:1.04}
+ .scroll-section .section-label{margin-bottom:10px}
+ .scroll-section p:not(.section-label){font-size:15px;line-height:1.5;max-width:36ch}
+ .final-section{background:none}
+ .final-section .disclaimer{display:none}
+ .cta-button,.footer-back{min-height:44px}
+ .site-footer{padding-bottom:calc(28px + env(safe-area-inset-bottom))}
+ .marquee-wrap{display:none}
+}
+@media(max-width:767px) and (orientation:landscape){
+ .hero-copy{left:5vw;top:75px}.hero-heading{font-size:64px;margin-bottom:12px}
+ .hero-copy .section-label{font-size:11px;margin-bottom:12px}.hero-tagline{font-size:18px}
+ .hero-product{width:50vw;left:48vw;top:16svh}
+ .align-left{padding:76px 69vw 18px 5vw}.align-right{padding:76px 5vw 18px 69vw}
+ .scroll-section h2{font-size:28px;margin-bottom:12px}
+ .scroll-section p:not(.section-label){font-size:13px;line-height:1.45}
+ .scroll-section .section-label{font-size:11px;margin-bottom:8px}
+ .cta-button{font-size:13px;margin-top:8px}
+}
+@media(max-width:767px) and (orientation:portrait){
+ .hero-standalone{height:100svh}
+ .scroll-cue{top:calc(100svh - 25px);font-size:11px}
+ .scroll-line{height:18px}
+}
+@media(max-width:350px) and (orientation:portrait){
+ .hero-heading{font-size:70px;margin-bottom:14px}
+ .hero-tagline{font-size:19px}
+ .hero-copy .section-label{font-size:11px;margin-bottom:14px}
+}

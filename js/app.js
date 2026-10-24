@@ -1,29 +1,51 @@
 (() => {
   const count = 73, frames = new Array(count), canvas = document.querySelector('#canvas'), ctx = canvas.getContext('2d');
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const mobile = () => innerWidth < 768;
+  const frameFolder=innerWidth<768?'mobile':'focus';
+  const mobile = () => innerWidth < 768 && innerHeight > innerWidth*.85;
   const hero = document.querySelector('.hero-standalone'), wrap = document.querySelector('.canvas-wrap'), container = document.querySelector('#scroll-container');
   const sections = [...document.querySelectorAll('.scroll-section')];
   const heroProduct = document.querySelector('.hero-product');
   const footer = document.querySelector('.site-footer');
   const heroHints = document.querySelectorAll('.scroll-cue, .hero-footnote');
+  const heroCopy = document.querySelector('.hero-copy');
+  let layout, pendingUpdate=false, lastDraw='', productBox;
   let frame = 0, progress = 0, loaded = 0, lenis;
   const clamp = n => Math.max(0, Math.min(1, n));
   const smooth = n => {const t=clamp(n);return t*t*(3-2*t);};
+  function measure(){
+    const origin=heroProduct.getBoundingClientRect();
+    layout={w:innerWidth,h:innerHeight,dpr:Math.min(devicePixelRatio||1,2),
+      originX:origin.left,originY:origin.top+scrollY,originW:origin.width,
+      copyBottom:heroCopy.getBoundingClientRect().bottom+scrollY,
+      start:hero.offsetHeight,range:container.offsetHeight-innerHeight,
+      footerTop:footer.offsetTop,footerHeight:footer.offsetHeight,
+      total:document.documentElement.scrollHeight-innerHeight,
+      bottoms:sections.map(s=>parseFloat(getComputedStyle(s).paddingTop)+s.querySelector('.section-inner').offsetHeight)};
+    lastDraw='';
+  }
+  function requestUpdate(){if(!pendingUpdate){pendingUpdate=true;requestAnimationFrame(()=>{pendingUpdate=false;update();});}}
   function draw(index = frame) {
     frame = index;
     const img = frames[index]; if (!img) return;
-    const dpr = Math.min(devicePixelRatio || 1, 2);
-    const w = innerWidth, h = innerHeight;
+    if(!layout)measure();
+    const {w,h,dpr}=layout;
     if(canvas.width !== Math.round(w*dpr) || canvas.height !== Math.round(h*dpr)){canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr);}
-    ctx.setTransform(dpr,0,0,dpr,0,0); ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h);
     // The source is nearly square; fit it to the dedicated product zone,
     // keeping all exploded layers visible on narrow screens.
     const zoneW = mobile() ? w * 1.04 : w * .64;
-    const zoneH = mobile() ? h * .56 : h * .80;
+    let productTop=h*.43;
+    if(mobile())sections.forEach((s,i)=>{
+      const enter=+s.dataset.enter/100,leave=+s.dataset.leave/100;
+      const clearance=smooth((progress-enter+.025)/.025)*
+        (s.dataset.persist==='true'?1:smooth((leave+.025-progress)/.025));
+      productTop=Math.max(productTop,h*.43+(layout.bottoms[i]+20-h*.43)*clearance);
+    });
+    const productBottom=h-24;
+    const zoneH = mobile() ? Math.max(100,productBottom-productTop) : h * .80;
     const scale = Math.min(zoneW / img.naturalWidth, zoneH / img.naturalHeight);
     const dw = img.naturalWidth*scale, dh=img.naturalHeight*scale;
-    const centerY = mobile() ? h*.70 : h*.55;
+    const centerY = mobile() ? (productTop+productBottom)/2 : h*.55;
     let centerX=.65;
     if(progress>.18)centerX=.65-.30*smooth((progress-.18)/.03);
     if(progress>.34)centerX=.35+.30*smooth((progress-.34)/.03);
@@ -31,15 +53,22 @@
     if(progress>.76)centerX=.5-.15*smooth((progress-.76)/.04);
     // One canvas owns the phone from the opening through the final frame.
     // Match the original hero image exactly, then carry it into its sticky pose.
-    const origin = heroProduct.getBoundingClientRect();
-    const originH = origin.width * frames[0].naturalHeight / frames[0].naturalWidth;
-    const travel = reduced ? 1 : clamp(scrollY / (hero.offsetHeight * .9));
+    let originW=layout.originW;
+    const originY=mobile()?Math.max(layout.originY,layout.copyBottom+10):layout.originY;
+    if(mobile())originW=Math.min(originW,Math.max(120,h-originY-12)*frames[0].naturalWidth/frames[0].naturalHeight);
+    const originH = originW * frames[0].naturalHeight / frames[0].naturalWidth;
+    const originX=mobile()?(w-originW)/2:layout.originX;
+    const travel = reduced ? 1 : clamp(scrollY / (layout.start * .9));
     const eased = travel * travel * (3 - 2 * travel);
     const mix = (a,b) => a+(b-a)*eased;
-    ctx.drawImage(img,
-      mix(origin.left,w*(mobile()?.5:centerX)-dw/2),
-      mix(origin.top+scrollY,centerY-dh/2),
-      mix(origin.width,dw),mix(originH,dh));
+    const x=mix(originX,w*(mobile()?.5:centerX)-dw/2),y=mix(originY,centerY-dh/2);
+    const width=mix(originW,dw),height=mix(originH,dh);
+    productBox={x,y,width,height};
+    const signature=[index,x,y,width,height].join(',');
+    if(signature===lastDraw)return;
+    lastDraw=signature;
+    ctx.setTransform(dpr,0,0,dpr,0,0);ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h);
+    ctx.drawImage(img,x,y,width,height);
     // Original white studio frames preserve natural edges and ground lighting.
   }
   function showSection(section,p) {
@@ -62,7 +91,8 @@
     });
   }
   function update(){
-    const start=hero.offsetHeight, range=container.offsetHeight-innerHeight;
+    if(!layout)measure();
+    const {start,range}=layout;
     progress=clamp((scrollY-start)/range);
     const transition=clamp(scrollY/(innerHeight*.7));
     document.querySelector('.hero-copy').style.opacity=1-transition;
@@ -79,9 +109,9 @@
     draw(next);
     sections.forEach(s=>showSection(s,progress));
     // Let the fixed experience leave naturally as the real footer enters.
-    const footerOverlap=Math.max(0,scrollY+innerHeight-footer.offsetTop);
+    const footerOverlap=Math.max(0,scrollY+innerHeight-layout.footerTop);
     wrap.style.transform=`translateY(${-footerOverlap*.8}px)`;
-    const footerFade=1-clamp(footerOverlap/(footer.offsetHeight*.65));
+    const footerFade=1-clamp(footerOverlap/(layout.footerHeight*.65));
     sections.forEach(s=>{
       s.style.opacity=Number(s.style.opacity)*footerFade;
       if(footerFade===0)s.style.visibility='hidden';
@@ -89,10 +119,10 @@
     const marquee=document.querySelector('.marquee-wrap');
     marquee.style.opacity=clamp((progress-.72)/.025)*clamp((.84-progress)/.025)*.5;
     document.querySelector('.marquee-text').style.transform=`translateX(${(progress-.72)*-100}%)`;
-    document.querySelector('.experience-progress div').style.transform=`scaleX(${clamp(scrollY/(document.documentElement.scrollHeight-innerHeight))})`;
-    window.duoState={frame,progress,loaded,total:count};
+    document.querySelector('.experience-progress div').style.transform=`scaleX(${clamp(scrollY/layout.total)})`;
+    window.duoState={frame,progress,loaded,total:count,productBox};
   }
-  function load(i){return new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>{frames[i]=img;loaded++;document.querySelector('#loader-bar').style.width=`${loaded/count*100}%`;if(i===0)draw(0);resolve();};img.onerror=()=>reject(new Error('A product frame could not be loaded.'));img.src=`frames/focus/frame_${String(i+1).padStart(4,'0')}.webp?v=product-focus`;});}
+  function load(i){return new Promise((resolve,reject)=>{const img=new Image();img.onload=async()=>{try{await img.decode();frames[i]=img;loaded++;document.querySelector('#loader-bar').style.width=`${loaded/count*100}%`;if(i===0)draw(0);resolve();}catch(error){reject(error);}};img.onerror=()=>reject(new Error('A product frame could not be loaded.'));img.src=`frames/${frameFolder}/frame_${String(i+1).padStart(4,'0')}.webp?v=mobile-polish`;});}
   async function init(){
     try{
       await Promise.all(Array.from({length:10},(_,i)=>load(i)));
@@ -100,12 +130,13 @@
       for(let i=10;i<count;i+=8)await Promise.all(Array.from({length:Math.min(8,count-i)},(_,j)=>load(i+j)));
       if(window.gsap&&window.ScrollTrigger&&window.Lenis&&!reduced){
         gsap.registerPlugin(ScrollTrigger);
-        lenis=new Lenis({duration:1.1,smoothWheel:true});
-        lenis.on('scroll',()=>{ScrollTrigger.update();update();});
+        lenis=new Lenis({duration:1.1,smoothWheel:true,syncTouch:false});
+        lenis.on('scroll',()=>{ScrollTrigger.update();requestUpdate();});
         gsap.ticker.add(time=>lenis.raf(time*1000));gsap.ticker.lagSmoothing(0);
       }
       // The local review page uses the same scrolling path as navigation.
       window.duoPreviewSeek = p => {const to=p<0?hero.offsetHeight*(p+1):hero.offsetHeight+(container.offsetHeight-innerHeight)*p;if(lenis)lenis.scrollTo(to,{immediate:true});else scrollTo(0,to);update();};
+      measure();
       document.body.classList.add('canvas-ready');
       document.querySelector('#loader').remove();draw();update();
       document.querySelectorAll('a[href^="#"]').forEach(a=>a.addEventListener('click',e=>{
@@ -115,7 +146,9 @@
       }));
     }catch(error){document.querySelector('#loader-percent').textContent='Could not load the experience. Please refresh to retry.';console.error(error);}
   }
-  addEventListener('scroll',update,{passive:true});addEventListener('resize',()=>{draw();update();});init();
+  addEventListener('scroll',requestUpdate,{passive:true});
+  addEventListener('resize',()=>{measure();requestUpdate();});
+  init();
 })();
 
 
