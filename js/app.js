@@ -52,8 +52,9 @@
     let centerX=.65;
     if(progress>.18)centerX=.65-.30*smooth((progress-.18)/.03);
     if(progress>.34)centerX=.35+.30*smooth((progress-.34)/.03);
-    if(progress>.71)centerX=.65-.15*smooth((progress-.71)/.05);
-    if(progress>.76)centerX=.5-.15*smooth((progress-.76)/.04);
+    // Arrive at center before reassembly, hold there, then make room for copy.
+    if(progress>.685)centerX=.65-.15*smooth((progress-.685)/.025);
+    if(progress>.84)centerX=.5-.15*smooth((progress-.84)/.06);
     // One canvas owns the phone from the opening through the final frame.
     // Match the original hero image exactly, then carry it into its sticky pose.
     let originW=layout.originW;
@@ -131,7 +132,7 @@
     wrap.style.opacity=1;
     // Let the first feature arrive around the assembled phone before opening it.
     // Hold the exploded design through its detail chapter, then reassemble
-    // before the final copy enters at 88%. Scrolling back reverses this path.
+    // before the final copy enters at 92%. Scrolling back reverses this path.
     const opening=clamp((progress-.14)/.38);
     const reassembly=smooth((progress-.71)/.13);
     const playback=opening*(1-reassembly);
