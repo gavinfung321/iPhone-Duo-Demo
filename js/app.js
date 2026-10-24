@@ -11,7 +11,7 @@
   const heroCopy = document.querySelector('.hero-copy');
   const productBar=document.querySelector('.product-bar');
   let layout, pendingUpdate=false, lastDraw='', productBox;
-  let frame = 0, progress = 0, loaded = 0, lenis;
+  let frame = 0, progress = 0, loaded = 0, lenis, sharpHero, heroBlend=0;
   const clamp = n => Math.max(0, Math.min(1, n));
   const smooth = n => {const t=clamp(n);return t*t*(3-2*t);};
   function measure(){
@@ -73,11 +73,15 @@
       y=Math.max(layout.barFloor,Math.min(y-footerOverlap*.8,ceiling-height));
     }else if(scrollY>h*.55){y=Math.max(y,layout.barFloor);}
     productBox={x,y,width,height};
-    const signature=[index,x,y,width,height].join(',');
+    // Fade the registered still into frame zero before the explosion starts.
+    // Both sources share the same product bounds and one continuous canvas pose.
+    heroBlend=sharpHero?1-smooth((progress-.10)/.04):0;
+    const signature=[index,x,y,width,height,heroBlend].join(',');
     if(signature===lastDraw)return;
     lastDraw=signature;
     ctx.setTransform(dpr,0,0,dpr,0,0);ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h);
     ctx.drawImage(img,x,y,width,height);
+    if(heroBlend>0){ctx.globalAlpha=heroBlend;ctx.drawImage(sharpHero,x,y,width,height);ctx.globalAlpha=1;}
     // Original white studio frames preserve natural edges and ground lighting.
   }
   function showSection(section,p) {
@@ -132,12 +136,15 @@
     marquee.style.opacity=clamp((progress-.72)/.025)*clamp((.84-progress)/.025)*.5;
     document.querySelector('.marquee-text').style.transform=`translateX(${(progress-.72)*-100}%)`;
     document.querySelector('.experience-progress div').style.transform=`scaleX(${clamp(scrollY/layout.total)})`;
-    window.duoState={frame,progress,loaded,total:count,productBox};
+    window.duoState={frame,progress,loaded,total:count,productBox,heroBlend};
   }
   function load(i){return new Promise((resolve,reject)=>{const img=new Image();img.onload=async()=>{try{await img.decode();frames[i]=img;loaded++;document.querySelector('#loader-bar').style.width=`${loaded/count*100}%`;if(i===0)draw(0);resolve();}catch(error){reject(error);}};img.onerror=()=>reject(new Error('A product frame could not be loaded.'));img.src=`frames/${frameFolder}/frame_${String(i+1).padStart(4,'0')}.webp?v=mobile-polish`;});}
   async function init(){
     try{
-      await Promise.all(Array.from({length:10},(_,i)=>load(i)));
+      await Promise.all([
+        heroProduct.decode().then(()=>{sharpHero=heroProduct;}).catch(()=>{}),
+        ...Array.from({length:10},(_,i)=>load(i))
+      ]);
       // Small batches limit decode pressure on mobile.
       for(let i=10;i<count;i+=8)await Promise.all(Array.from({length:Math.min(8,count-i)},(_,j)=>load(i+j)));
       if(window.gsap&&window.Lenis&&!reduced){

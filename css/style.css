@@ -102,3 +102,5 @@ button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus
 }
 .footer-credits{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-bottom:20px;color:var(--silver);font-size:12px;line-height:1.7}.footer-credits p{margin:0}.footer-credits a{text-decoration:underline;text-underline-offset:3px}
 @media(max-width:767px){.footer-credits{flex-direction:column;gap:7px}}
+/* Keep the sharper hero fully inside the desktop viewport, above the hints. */
+@media(min-width:768px){.hero-product{width:min(52vw,calc(64svh * 731 / 616));left:44vw;top:22svh}}
