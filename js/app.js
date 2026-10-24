@@ -45,13 +45,16 @@
       if(clearance>0)productTop=productTop+(layout.bottoms[i]+16-productTop)*clearance;
     });
     const productBottom=h-24;
+    const statementPresence=smooth((progress-.695)/.025)*(1-smooth((progress-.86)/.03));
+    const statementFloor=layout.barFloor+32+Math.min(w*.08,h*.06,96)*1.15;
     const zoneH = mobile() ? Math.max(100,productBottom-productTop) : Math.min(h*.80,h-layout.barFloor-24);
-    const scale = Math.min(zoneW / img.naturalWidth, zoneH / img.naturalHeight);
+    const captionZoneH=!mobile()&&h<500?zoneH+(Math.min(zoneH,h-statementFloor-24)-zoneH)*statementPresence:zoneH;
+    const scale = Math.min(zoneW / img.naturalWidth, captionZoneH / img.naturalHeight);
     const dw = img.naturalWidth*scale, dh=img.naturalHeight*scale;
-    const centerY = mobile() ? productTop+dh/2 : h*.55;
+    const centerY = mobile() ? productTop+dh/2 : h*.55+(h<500?((statementFloor+h-24)/2-h*.55)*statementPresence:0);
     let centerX=.65;
-    if(progress>.18)centerX=.65-.30*smooth((progress-.18)/.03);
-    if(progress>.34)centerX=.35+.30*smooth((progress-.34)/.03);
+    if(progress>.42)centerX=.65-.30*smooth((progress-.42)/.03);
+    if(progress>.55)centerX=.35+.30*smooth((progress-.55)/.03);
     // Arrive at center before reassembly, hold there, then make room for copy.
     if(progress>.685)centerX=.65-.15*smooth((progress-.685)/.025);
     if(progress>.84)centerX=.5-.15*smooth((progress-.84)/.06);
@@ -162,6 +165,7 @@
       if(footerFade===0)s.style.visibility='hidden';
     });
     const marquee=document.querySelector('.marquee-wrap');
+    marquee.style.top=`${layout.barFloor+16}px`;
     marquee.style.opacity=clamp((progress-.72)/.025)*clamp((.86-progress)/.025)*.75;
     document.querySelector('.marquee-text').style.transform=`translateY(${18*(1-smooth((progress-.72)/.025))}px)`;
     document.querySelector('.experience-progress div').style.transform=`scaleX(${clamp(scrollY/layout.total)})`;
