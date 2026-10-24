@@ -27,7 +27,7 @@
     let centerX=.65;
     if(progress>.18)centerX=.65-.30*smooth((progress-.18)/.03);
     if(progress>.34)centerX=.35+.30*smooth((progress-.34)/.03);
-    if(progress>.51)centerX=.65-.15*smooth((progress-.51)/.04);
+    if(progress>.71)centerX=.65-.15*smooth((progress-.71)/.05);
     if(progress>.76)centerX=.5-.15*smooth((progress-.76)/.04);
     // One canvas owns the phone from the opening through the final frame.
     // Match the original hero image exactly, then carry it into its sticky pose.
@@ -48,7 +48,7 @@
     const local=clamp((p-enter)/fade), exit=persistent ? 1 : clamp((leave-p)/fade);
     const visible=local*exit;
     section.style.visibility=visible>0?'visible':'hidden'; section.style.opacity=visible;
-    section.querySelectorAll('.section-label,h2,.section-inner>p:not(.section-label),.cta-button,.stat').forEach((el,i)=>{
+    section.querySelectorAll('.section-label,h2,.section-inner>p:not(.section-label),.cta-button').forEach((el,i)=>{
       const t=reduced?1:clamp((p-enter-i*.0025)/.024); const n=1-t;
       el.style.opacity=t;
       let transform='none';
@@ -60,7 +60,6 @@
         default:transform=`translateY(${28*n}px)`;
       }} el.style.transform=transform;
     });
-    section.querySelectorAll('.stat-number').forEach(el=>{el.textContent=Math.round(+el.dataset.value*clamp((p-enter)/.06));});
   }
   function update(){
     const start=hero.offsetHeight, range=container.offsetHeight-innerHeight;
@@ -87,8 +86,6 @@
       s.style.opacity=Number(s.style.opacity)*footerFade;
       if(footerFade===0)s.style.visibility='hidden';
     });
-    const overlay=clamp((progress-.53)/.04)*clamp((.77-progress)/.04)*.9;
-    document.querySelector('#dark-overlay').style.opacity=overlay;
     const marquee=document.querySelector('.marquee-wrap');
     marquee.style.opacity=clamp((progress-.72)/.025)*clamp((.84-progress)/.025)*.5;
     document.querySelector('.marquee-text').style.transform=`translateX(${(progress-.72)*-100}%)`;
