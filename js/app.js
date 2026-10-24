@@ -70,9 +70,12 @@
     const footerOverlap=Math.max(0,scrollY+h-layout.footerTop);
     if(footerOverlap>0){
       const ceiling=h-footerOverlap-12;
-      const fit=Math.min(1,Math.max(1,ceiling-layout.barFloor)/height);
+      const fit=Math.min(1,Math.max(0,ceiling-layout.barFloor)/height);
       x+=width*(1-fit)/2;width*=fit;height*=fit;
-      y=Math.max(layout.barFloor,Math.min(y-footerOverlap*.8,ceiling-height));
+      y=height>0?Math.max(layout.barFloor,Math.min(y-footerOverlap*.8,ceiling-height)):Math.max(0,ceiling);
+      // As closing copy clears, settle the product on the page centerline.
+      const returnToCenter=smooth(footerOverlap/(layout.footerHeight*.65));
+      x+=(w/2-(x+width/2))*returnToCenter;
     }else if(scrollY>h*.55){y=Math.max(y,layout.barFloor);}
     // A restrained arrival settles into the exact pose used by scrolling.
     if(arrival<1){
@@ -153,7 +156,7 @@
     // Let the fixed experience leave naturally as the real footer enters.
     const footerOverlap=Math.max(0,scrollY+innerHeight-layout.footerTop);
     wrap.style.transform='none';
-    const footerFade=1-clamp(footerOverlap/(layout.footerHeight*.65));
+    const footerFade=1-smooth(footerOverlap/(layout.footerHeight*.65));
     sections.forEach(s=>{
       s.style.opacity=Number(s.style.opacity)*footerFade;
       if(footerFade===0)s.style.visibility='hidden';
