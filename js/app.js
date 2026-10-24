@@ -98,6 +98,7 @@
   function showSection(section,p) {
     const enter=+section.dataset.enter/100, leave=+section.dataset.leave/100;
     const fade=.025, persistent=section.dataset.persist==='true';
+    const slide=Math.min(45,layout.w*.04);
     const local=clamp((p-enter)/fade), exit=persistent ? 1 : clamp((leave-p)/fade);
     const visible=local*exit;
     section.style.visibility=visible>0?'visible':'hidden'; section.style.opacity=visible;
@@ -106,8 +107,8 @@
       el.style.opacity=t;
       let transform='none';
       if(!reduced){switch(section.dataset.animation){
-        case 'slide-left':transform=`translateX(${-45*n}px)`;break;
-        case 'slide-right':transform=`translateX(${45*n}px)`;break;
+        case 'slide-left':transform=`translateX(${-slide*n}px)`;break;
+        case 'slide-right':transform=`translateX(${slide*n}px)`;break;
         case 'scale-up':transform=`scale(${1-.12*n})`;break;
         case 'clip-reveal':el.style.clipPath=`inset(${100*n}% 0 0 0)`;break;
         default:transform=`translateY(${28*n}px)`;
