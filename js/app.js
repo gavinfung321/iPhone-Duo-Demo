@@ -84,7 +84,7 @@
     // Fade the registered still into frame zero before the explosion starts.
     // Both sources share the same product bounds and one continuous canvas pose.
     const openingStill=1-smooth((progress-.10)/.04);
-    const closingStill=smooth((progress-.78)/.02);
+    const closingStill=smooth((progress-.84)/.02);
     heroBlend=sharpHero?Math.max(openingStill,closingStill):0;
     const signature=[index,x,y,width,height,heroBlend,arrival].join(',');
     if(signature===lastDraw)return;
@@ -131,11 +131,11 @@
     wrap.style.opacity=1;
     // Let the first feature arrive around the assembled phone before opening it.
     // Hold the exploded design through its detail chapter, then reassemble
-    // before the final copy enters at 80%. Scrolling back reverses this path.
+    // before the final copy enters at 88%. Scrolling back reverses this path.
     const opening=clamp((progress-.14)/.38);
-    const reassembly=smooth((progress-.71)/.07);
+    const reassembly=smooth((progress-.71)/.13);
     const playback=opening*(1-reassembly);
-    const next = reduced ? (progress>.28&&progress<.75?72:0) : Math.floor(playback*(count-1));
+    const next = reduced ? (progress>.28&&progress<.78?72:0) : Math.floor(playback*(count-1));
     draw(next);
     // Keep desktop copy beside the product instead of at the viewport edges.
     if(layout.w>=1200&&productBox){
@@ -157,7 +157,7 @@
       if(footerFade===0)s.style.visibility='hidden';
     });
     const marquee=document.querySelector('.marquee-wrap');
-    marquee.style.opacity=clamp((progress-.72)/.025)*clamp((.80-progress)/.025)*.5;
+    marquee.style.opacity=clamp((progress-.72)/.025)*clamp((.86-progress)/.025)*.5;
     document.querySelector('.marquee-text').style.transform=`translateX(${(progress-.72)*-100}%)`;
     document.querySelector('.experience-progress div').style.transform=`scaleX(${clamp(scrollY/layout.total)})`;
     window.duoState={frame,progress,loaded,total:count,productBox,heroBlend,arrival};
