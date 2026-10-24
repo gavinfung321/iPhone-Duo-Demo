@@ -130,6 +130,7 @@
     productBar.classList.toggle('is-visible',showBar);
     productBar.inert=!showBar;
     document.querySelector('.hero-copy').style.opacity=1-transition;
+    document.querySelector('.scroll-cue').classList.toggle('is-scrolling',scrollY>8);
     const hintOpacity=1-clamp(scrollY/(innerHeight*.22));
     heroHints.forEach(el=>{
       el.style.opacity=hintOpacity;

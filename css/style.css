@@ -119,3 +119,15 @@ button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus
 
 
 #hinge h2{padding-bottom:.12em}
+
+/* Share one centerline for desktop navigation and the announcement. */
+@media(min-width:768px){
+ .site-header .main-links{position:absolute;left:50%;transform:translateX(-50%);white-space:nowrap}
+ .announcement{display:flex;align-items:center;justify-content:center;gap:8px}
+ .announcement span{margin-left:0}
+}
+.scroll-line{position:relative;width:2px;height:36px;overflow:hidden;background:#d6d8dc}
+.scroll-line::after{content:"";position:absolute;left:0;top:0;width:100%;height:18px;background:linear-gradient(to bottom,transparent,#aeb2b8 40%,#17191c 72%);animation:scroll-line-flow 1.8s cubic-bezier(.4,0,.2,1) infinite}
+@keyframes scroll-line-flow{0%{transform:translateY(-18px);opacity:0}15%{opacity:1}80%{opacity:1}100%{transform:translateY(36px);opacity:0}}
+.scroll-cue.is-scrolling .scroll-line::after{animation-play-state:paused}
+@media(prefers-reduced-motion:reduce){.scroll-line::after{animation:none;transform:translateY(18px);opacity:1}}
