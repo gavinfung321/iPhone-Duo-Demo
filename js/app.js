@@ -22,6 +22,7 @@
       start:hero.offsetHeight,range:container.offsetHeight-innerHeight,
       footerTop:footer.offsetTop,footerHeight:footer.offsetHeight,
       total:document.documentElement.scrollHeight-innerHeight,
+      barFloor:parseFloat(getComputedStyle(productBar).top)+productBar.offsetHeight+12,
       bottoms:sections.map(s=>parseFloat(getComputedStyle(s).paddingTop)+s.querySelector('.section-inner').offsetHeight)};
     lastDraw='';
   }
@@ -43,7 +44,7 @@
       productTop=Math.max(productTop,h*.43+(layout.bottoms[i]+20-h*.43)*clearance);
     });
     const productBottom=h-24;
-    const zoneH = mobile() ? Math.max(100,productBottom-productTop) : h * .80;
+    const zoneH = mobile() ? Math.max(100,productBottom-productTop) : Math.min(h*.80,h-layout.barFloor-24);
     const scale = Math.min(zoneW / img.naturalWidth, zoneH / img.naturalHeight);
     const dw = img.naturalWidth*scale, dh=img.naturalHeight*scale;
     const centerY = mobile() ? (productTop+productBottom)/2 : h*.55;
@@ -62,8 +63,15 @@
     const travel = reduced ? 1 : clamp(scrollY / (layout.start * .9));
     const eased = travel * travel * (3 - 2 * travel);
     const mix = (a,b) => a+(b-a)*eased;
-    const x=mix(originX,w*(mobile()?.5:centerX)-dw/2),y=mix(originY,centerY-dh/2);
-    const width=mix(originW,dw),height=mix(originH,dh);
+    let x=mix(originX,w*(mobile()?.5:centerX)-dw/2),y=mix(originY,centerY-dh/2);
+    let width=mix(originW,dw),height=mix(originH,dh);
+    const footerOverlap=Math.max(0,scrollY+h-layout.footerTop);
+    if(footerOverlap>0){
+      const ceiling=h-footerOverlap-12;
+      const fit=Math.min(1,Math.max(1,ceiling-layout.barFloor)/height);
+      x+=width*(1-fit)/2;width*=fit;height*=fit;
+      y=Math.max(layout.barFloor,Math.min(y-footerOverlap*.8,ceiling-height));
+    }else if(scrollY>h*.55){y=Math.max(y,layout.barFloor);}
     productBox={x,y,width,height};
     const signature=[index,x,y,width,height].join(',');
     if(signature===lastDraw)return;
@@ -114,7 +122,7 @@
     sections.forEach(s=>showSection(s,progress));
     // Let the fixed experience leave naturally as the real footer enters.
     const footerOverlap=Math.max(0,scrollY+innerHeight-layout.footerTop);
-    wrap.style.transform=`translateY(${-footerOverlap*.8}px)`;
+    wrap.style.transform='none';
     const footerFade=1-clamp(footerOverlap/(layout.footerHeight*.65));
     sections.forEach(s=>{
       s.style.opacity=Number(s.style.opacity)*footerFade;
@@ -148,11 +156,13 @@
   function setupStore(){
     const dialogs=[...document.querySelectorAll('dialog')];
     let inBag=false;
+    function syncPanelViewport(){document.documentElement.style.setProperty('--panel-viewport',`${window.visualViewport?.height||innerHeight}px`);}
+    window.visualViewport?.addEventListener('resize',syncPanelViewport,{passive:true});
     function closePanels(){dialogs.forEach(d=>{if(d.open)d.close();});}
     function openPanel(id){
       closePanels();const panel=document.getElementById(id);
       if(id==='bag-panel')renderBag();
-      panel.showModal();document.documentElement.classList.add('panel-open');lenis?.stop();
+      syncPanelViewport();panel.showModal();document.documentElement.classList.add('panel-open');lenis?.stop();
       if(id==='search-panel')document.querySelector('#site-search').focus();
     }
     dialogs.forEach(d=>{
