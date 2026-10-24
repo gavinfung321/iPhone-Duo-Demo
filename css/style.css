@@ -100,3 +100,5 @@ button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus
  .hero-copy{top:calc(clamp(130px,17svh,180px) + env(safe-area-inset-top))}
  .scroll-section,.align-left,.align-right{padding-top:calc(clamp(100px,16svh,168px) + env(safe-area-inset-top))}
 }
+.footer-credits{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-bottom:20px;color:var(--silver);font-size:12px;line-height:1.7}.footer-credits p{margin:0}.footer-credits a{text-decoration:underline;text-underline-offset:3px}
+@media(max-width:767px){.footer-credits{flex-direction:column;gap:7px}}
