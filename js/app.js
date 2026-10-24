@@ -10,6 +10,7 @@
   const heroHints = document.querySelectorAll('.scroll-cue, .hero-footnote');
   const heroCopy = document.querySelector('.hero-copy');
   const productBar=document.querySelector('.product-bar');
+  let arrival=1;
   let layout, pendingUpdate=false, lastDraw='', productBox;
   let frame = 0, progress = 0, loaded = 0, lenis, sharpHero, heroBlend=0;
   const clamp = n => Math.max(0, Math.min(1, n));
@@ -72,16 +73,23 @@
       x+=width*(1-fit)/2;width*=fit;height*=fit;
       y=Math.max(layout.barFloor,Math.min(y-footerOverlap*.8,ceiling-height));
     }else if(scrollY>h*.55){y=Math.max(y,layout.barFloor);}
+    // A restrained arrival settles into the exact pose used by scrolling.
+    if(arrival<1){
+      const settle=1-arrival;
+      const introScale=1-.035*settle;
+      x+=width*(1-introScale)/2;y+=height*(1-introScale)/2+18*settle;
+      width*=introScale;height*=introScale;
+    }
     productBox={x,y,width,height};
     // Fade the registered still into frame zero before the explosion starts.
     // Both sources share the same product bounds and one continuous canvas pose.
     heroBlend=sharpHero?1-smooth((progress-.10)/.04):0;
-    const signature=[index,x,y,width,height,heroBlend].join(',');
+    const signature=[index,x,y,width,height,heroBlend,arrival].join(',');
     if(signature===lastDraw)return;
     lastDraw=signature;
     ctx.setTransform(dpr,0,0,dpr,0,0);ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h);
-    ctx.drawImage(img,x,y,width,height);
-    if(heroBlend>0){ctx.globalAlpha=heroBlend;ctx.drawImage(sharpHero,x,y,width,height);ctx.globalAlpha=1;}
+    ctx.globalAlpha=arrival;ctx.drawImage(img,x,y,width,height);ctx.globalAlpha=1;
+    if(heroBlend>0){ctx.globalAlpha=heroBlend*arrival;ctx.drawImage(sharpHero,x,y,width,height);ctx.globalAlpha=1;}
     // Original white studio frames preserve natural edges and ground lighting.
   }
   function showSection(section,p) {
@@ -146,9 +154,27 @@
     marquee.style.opacity=clamp((progress-.72)/.025)*clamp((.84-progress)/.025)*.5;
     document.querySelector('.marquee-text').style.transform=`translateX(${(progress-.72)*-100}%)`;
     document.querySelector('.experience-progress div').style.transform=`scaleX(${clamp(scrollY/layout.total)})`;
-    window.duoState={frame,progress,loaded,total:count,productBox,heroBlend};
+    window.duoState={frame,progress,loaded,total:count,productBox,heroBlend,arrival};
   }
   function load(i){return new Promise((resolve,reject)=>{const img=new Image();img.onload=async()=>{try{await img.decode();frames[i]=img;loaded++;document.querySelector('#loader-bar').style.width=`${loaded/count*100}%`;if(i===0)draw(0);resolve();}catch(error){reject(error);}};img.onerror=()=>reject(new Error('A product frame could not be loaded.'));img.src=`frames/${frameFolder}/frame_${String(i+1).padStart(4,'0')}.webp?v=mobile-polish`;});}
+  function playArrival(){
+    if(reduced||scrollY>8)return;
+    const parts=[...heroCopy.children,...heroHints];
+    const animations=parts.map((el,i)=>el.animate([
+      {opacity:0,transform:'translateY(14px)'},
+      {opacity:1,transform:'translateY(0)'}
+    ],{duration:700,delay:Math.min(i*90,360),easing:'cubic-bezier(.22,1,.36,1)',fill:'backwards'}));
+    arrival=0;
+    const start=performance.now();
+    function tick(now){
+      if(scrollY>8){arrival=1;animations.forEach(a=>a.cancel());update();return;}
+      const t=clamp((now-start-120)/1000);
+      arrival=1-Math.pow(1-t,3);
+      update();
+      if(t<1)requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
   async function init(){
     try{
       await Promise.all([
@@ -167,7 +193,7 @@
       measure();
       document.body.classList.add('canvas-ready');
       document.querySelector('#loader').remove();draw();update();
-      setupStore();
+      setupStore();playArrival();
     }catch(error){document.querySelector('#loader-percent').textContent='Could not load the experience. Please refresh to retry.';console.error(error);}
   }
   function setupStore(){
