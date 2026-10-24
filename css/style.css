@@ -95,3 +95,8 @@ button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus
  .scroll-section,.align-left,.align-right{padding-top:calc(84px + env(safe-area-inset-top))}
 }
 @media(max-width:767px){.store-panel .panel-kicker{min-height:32px;padding-right:48px}}
+/* Group mobile copy and product into one consistent vertical composition. */
+@media(max-width:767px) and (orientation:portrait){
+ .hero-copy{top:calc(clamp(130px,17svh,180px) + env(safe-area-inset-top))}
+ .scroll-section,.align-left,.align-right{padding-top:calc(clamp(100px,16svh,168px) + env(safe-area-inset-top))}
+}

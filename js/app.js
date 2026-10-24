@@ -41,13 +41,13 @@
       const enter=+s.dataset.enter/100,leave=+s.dataset.leave/100;
       const clearance=smooth((progress-enter+.025)/.025)*
         (s.dataset.persist==='true'?1:smooth((leave+.025-progress)/.025));
-      productTop=Math.max(productTop,h*.43+(layout.bottoms[i]+20-h*.43)*clearance);
+      if(clearance>0)productTop=productTop+(layout.bottoms[i]+16-productTop)*clearance;
     });
     const productBottom=h-24;
     const zoneH = mobile() ? Math.max(100,productBottom-productTop) : Math.min(h*.80,h-layout.barFloor-24);
     const scale = Math.min(zoneW / img.naturalWidth, zoneH / img.naturalHeight);
     const dw = img.naturalWidth*scale, dh=img.naturalHeight*scale;
-    const centerY = mobile() ? (productTop+productBottom)/2 : h*.55;
+    const centerY = mobile() ? productTop+dh/2 : h*.55;
     let centerX=.65;
     if(progress>.18)centerX=.65-.30*smooth((progress-.18)/.03);
     if(progress>.34)centerX=.35+.30*smooth((progress-.34)/.03);
@@ -56,7 +56,7 @@
     // One canvas owns the phone from the opening through the final frame.
     // Match the original hero image exactly, then carry it into its sticky pose.
     let originW=layout.originW;
-    const originY=mobile()?Math.max(layout.originY,layout.copyBottom+10):layout.originY;
+    const originY=mobile()?layout.copyBottom+16:layout.originY;
     if(mobile())originW=Math.min(originW,Math.max(120,h-originY-12)*frames[0].naturalWidth/frames[0].naturalHeight);
     const originH = originW * frames[0].naturalHeight / frames[0].naturalWidth;
     const originX=mobile()?(w-originW)/2:layout.originX;
