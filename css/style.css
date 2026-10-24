@@ -126,8 +126,12 @@ button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus
  .announcement{display:flex;align-items:center;justify-content:center;gap:8px}
  .announcement span{margin-left:0}
 }
-.scroll-line{position:relative;width:2px;height:36px;overflow:hidden;background:#d6d8dc}
-.scroll-line::after{content:"";position:absolute;left:0;top:0;width:100%;height:18px;background:linear-gradient(to bottom,transparent,#aeb2b8 40%,#17191c 72%);animation:scroll-line-flow 1.8s cubic-bezier(.4,0,.2,1) infinite}
-@keyframes scroll-line-flow{0%{transform:translateY(-18px);opacity:0}15%{opacity:1}80%{opacity:1}100%{transform:translateY(36px);opacity:0}}
-.scroll-cue.is-scrolling .scroll-line::after{animation-play-state:paused}
-@media(prefers-reduced-motion:reduce){.scroll-line::after{animation:none;transform:translateY(18px);opacity:1}}
+/* Fill the whole track, hold, then clear downward before repeating. */
+.scroll-line{position:relative;width:2px;height:44px;overflow:hidden;background:#d6d8dc}
+.scroll-line::before,.scroll-line::after{content:"";position:absolute;inset:0;transform:scaleY(0);transform-origin:top}
+.scroll-line::after{z-index:1;background:#17191c;animation:scroll-line-fill 3s cubic-bezier(.65,0,.85,.5) infinite}
+.scroll-line::before{z-index:2;background:#d6d8dc;animation:scroll-line-clear 3s cubic-bezier(.65,0,.85,.5) infinite}
+@keyframes scroll-line-fill{0%{transform:scaleY(0)}40%,100%{transform:scaleY(1)}}
+@keyframes scroll-line-clear{0%,55%{transform:scaleY(0)}90%,100%{transform:scaleY(1)}}
+.scroll-cue.is-scrolling .scroll-line::before,.scroll-cue.is-scrolling .scroll-line::after{animation-play-state:paused}
+@media(prefers-reduced-motion:reduce){.scroll-line::before{animation:none;transform:scaleY(0)}.scroll-line::after{animation:none;transform:scaleY(1)}}
